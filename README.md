@@ -31,5 +31,18 @@ Commit your changes (git commit -am 'Add new feature').
 Push to the branch (git push origin feature-branch).
 Create a new pull request.
 
+****Steps to configure the repository
+1. Import the PartiQL.g4 and PartiQLTokens.g4 grammar files from https://partiql.org/syntax/antlr.html
+2. Alternatively, the github repo can also be referred: https://github.com/partiql/partiql-lang-kotlin/tree/c3b6e66647cdee421dd43abe1cfca8546f0f5529
+3. Download the antlr complete jar from antlr official page.
+4. Execute antlr command to parse PartiQLTokens.g4
+   java -jar antlr-4.13.1-complete.jar PartiQLTokens.g4 -Dlanguage=Python3
+   
+5. Execute antlr command to parse PartiQL.g4
+   java -jar antlr-4.13.1-complete.jar PartiQL.g4 -Dlanguage=Python3
 
+6. Pip install antlr4-python3-runtime
+   pip install boto3 antlr4-python3-runtime
+
+7. Verify PartiQLParser.py, PartiQLListener.py and PartiQLTokens.py files has been generated after executing the above steps.
 
