@@ -19,6 +19,3 @@ def validate_partiql(query):
     except Exception as e:
         return False
 
-
-partiql_query = "a 10"
-print(validate_partiql(partiql_query))
