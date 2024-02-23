@@ -1,16 +1,12 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from src.data_filter_manager import grant_row_level_permission
+from src.query_validator import validate_partiql
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+catalog_id = '919872893264'
+database_name = 'risk_transactions_db'
+table_name = 'executions'
+principal = 'arn:aws:iam::205083977700:user/risk-lf-analyst'
+filter_expression = "clientid='ClientABC'"
 
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+validate_partiql(filter_expression)
+grant_row_level_permission(catalog_id, database_name, table_name, principal, filter_expression)
