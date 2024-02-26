@@ -1,5 +1,6 @@
 import boto3
 import logging
+import ast
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -8,6 +9,17 @@ logger.setLevel(logging.INFO)
 def get_lake_formation_client():
     lf_client = boto3.client('lakeformation', region_name='us-east-1')
     return lf_client
+
+
+def normalize_filter_expression(filter_expression):
+    # Normalize a filter expression by parsing it into an abstract syntax tree (AST)
+    # And then converting it back to a string.
+    try:
+        parsed_expression = ast.parse(filter_expression, mode='eval')
+        normalized_expression = ast.dump(parsed_expression)
+        return normalized_expression
+    except SyntaxError:
+        return None
 
 
 def check_existing_filters(catalog_id, principal_arn, database_name, table_name):
@@ -38,7 +50,7 @@ def check_existing_filters(catalog_id, principal_arn, database_name, table_name)
         for permission in permissions:
             logger.info(f"Permission: {permission}")
             if 'Condition' in permission and 'FilterExpression' in permission['Condition']:
-                existing_filters.append(permission['Condition']['FilterExpression'])
+                existing_filters.append(normalize_filter_expression(permission['Condition']['FilterExpression']))
 
         return existing_filters
 
@@ -46,11 +58,17 @@ def check_existing_filters(catalog_id, principal_arn, database_name, table_name)
 def grant_row_level_permission(catalog_id, database_name, table_name, principal, filter_expression):
 
     lf_client = get_lake_formation_client()
+
+    normalized_expression = normalize_filter_expression(filter_expression)
+    if not normalized_expression:
+        print("Invalid filter expression.")
+        return
+
     existing_filters = check_existing_filters(catalog_id, principal, database_name, table_name)
 
-    if filter_expression in existing_filters:
+    if normalized_expression in existing_filters:
         logger.info("Row-level data filter already exists with the provided filter expression.")
-        return f"Data filter with filter-expression {filter_expression} already exists"
+        return f"Data filter with filter-expression {filter_expression} & {normalized_expression} already exists"
 
     resource = {
         'DatabaseName': database_name,
