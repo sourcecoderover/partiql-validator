@@ -1,6 +1,6 @@
 import logging
 
-from src.aws_utils import get_lake_formation_client, get_dynamodb_client, save_to_dynamodb, fetch_records_from_dynamodb
+from src.aws_utils import save_to_dynamodb, fetch_records_from_dynamodb, create_filter_permission
 from src.query_validator import with_syntactic_validator
 from src.row_level_filter import DFRowLevelFilter
 
