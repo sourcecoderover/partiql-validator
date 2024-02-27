@@ -23,7 +23,7 @@ def validate_partiql(query):
 def with_syntactic_validator(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        query = kwargs.get('query')  # Assuming 'query' is a keyword argument
+        query = kwargs.get('query')
         if validate_partiql(query):
             return func(*args, **kwargs)
         else:
