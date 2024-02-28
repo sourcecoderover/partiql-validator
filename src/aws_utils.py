@@ -1,5 +1,8 @@
-import boto3
+import keyword
 import logging
+
+import boto3
+import sqlparse
 
 from src.filter_record import FilterRecord
 from src.row_level_filter import DFRowLevelFilter
@@ -82,3 +85,12 @@ def create_filter_permission(df_row_level_filter: DFRowLevelFilter):
     )
 
     return f"Row-level permission granted successfully"
+
+
+def sort_normalized_sql(normalized_sql):
+    parsed_sql = sqlparse.parse(normalized_sql)[0]
+    normalized_tokens = [str(t).strip() for t in parsed_sql.tokens if not t.is_whitespace]
+    normalized_tokens = [t.upper() if keyword.iskeyword(t) else t for t in normalized_tokens]
+    normalized_tokens.sort()
+    normalized_query = " ".join(normalized_tokens)
+    return normalized_query
