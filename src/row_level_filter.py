@@ -1,4 +1,4 @@
-import ast
+import sqlparse
 
 
 class DFRowLevelFilter:
@@ -39,8 +39,8 @@ class DFRowLevelFilter:
 
     def get_normalized_expression(self):
         try:
-            parsed_expression = ast.parse(self._expression, mode='eval')
-            normalized_expression = ast.dump(parsed_expression)
-            return normalized_expression
-        except SyntaxError:
-            return None
+            parsed = sqlparse.parse(self._expression)
+            normalized = sqlparse.format(str(parsed[0]), reindent=True, keyword_case='upper', strip_comments=True)
+            return normalized
+        except SyntaxError as e:
+            return e.msg

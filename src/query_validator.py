@@ -14,7 +14,8 @@ def validate_partiql(query):
     parser = PartiQLParser(stream)
 
     try:
-        parser.root()
+        tree = parser.root()
+        print(tree.toStringTree(recog=parser))
         return not parser.getNumberOfSyntaxErrors()
     except Exception as e:
         return False
@@ -23,8 +24,8 @@ def validate_partiql(query):
 def with_syntactic_validator(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        query = kwargs.get('query')
-        if validate_partiql(query):
+        df_data_filter_object = args[0]
+        if validate_partiql(df_data_filter_object.expression):
             return func(*args, **kwargs)
         else:
             raise ValueError("Invalid PartiQL query provided.")
