@@ -1,3 +1,5 @@
+import keyword
+
 import sqlparse
 
 
@@ -39,8 +41,11 @@ class DFRowLevelFilter:
 
     def get_normalized_expression(self):
         try:
-            parsed = sqlparse.parse(self._expression)
-            normalized = sqlparse.format(str(parsed[0]), reindent=True, keyword_case='upper', strip_comments=True)
-            return normalized
+            parsed_sql = sqlparse.parse(self._expression)[0]
+            normalized_tokens = [str(token).strip() for token in parsed_sql.tokens if not token.is_whitespace]
+            normalized_tokens = [token.upper() if keyword.iskeyword(token) else token for token in normalized_tokens]
+            normalized_tokens.sort()
+            normalized_expression = " ".join(normalized_tokens)
+            return normalized_expression
         except SyntaxError as e:
             return e.msg

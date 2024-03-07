@@ -1,4 +1,3 @@
-from src.aws_utils import sort_normalized_sql
 from src.data_filter_manager import create_filter_if_not_exist
 from src.row_level_filter import DFRowLevelFilter
 
@@ -27,8 +26,8 @@ df_row_level_filter_1 = DFRowLevelFilter(database_name, table_name, filter_expre
 df_row_level_filter_2 = DFRowLevelFilter(database_name, table_name, filter_expression_2)
 
 # create_filter_if_not_exist(df_row_level_filter)
-normalized_sql1 = sort_normalized_sql(df_row_level_filter_1.get_normalized_expression())
-normalized_sql2 = sort_normalized_sql(df_row_level_filter_2.get_normalized_expression())
+normalized_sql1 = df_row_level_filter_1.get_normalized_expression()
+normalized_sql2 = df_row_level_filter_2.get_normalized_expression()
 
 
 if normalized_sql1 == normalized_sql2:

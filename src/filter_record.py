@@ -2,8 +2,8 @@ from datetime import datetime
 
 
 class FilterRecord:
-    def __init__(self, filter_name, filter_expression, normalized_expression, database_name, table_name,
-                 created_by, updated_by):
+    def __init__(self, filter_name=None, filter_expression=None, normalized_expression=None, database_name=None,
+                 table_name=None, created_by=None, updated_by=None):
         self.filter_name = filter_name
         self.filter_expression = filter_expression
         self.normalized_expression = normalized_expression

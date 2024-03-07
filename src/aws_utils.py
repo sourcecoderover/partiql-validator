@@ -35,7 +35,7 @@ def save_to_dynamodb(df_row_level_filter: DFRowLevelFilter):
 
 def fetch_records_from_dynamodb(df_row_level_filter: DFRowLevelFilter):
     dynamodb = get_dynamodb_client()
-    table = dynamodb.Table("table_name")
+    table = dynamodb.Table("lf-data-filters")
 
     logger.info("Constructing the filter expression")
     normalized_expression = df_row_level_filter.get_normalized_expression()
@@ -51,7 +51,10 @@ def fetch_records_from_dynamodb(df_row_level_filter: DFRowLevelFilter):
     response = table.scan(FilterExpression=filter_expression, ExpressionAttributeValues=expression_attribute_values)
     items = response['Items']
 
-    records = [FilterRecord().from_dynamodb_item(item) for item in items]
+    #records = [FilterRecord.from_dynamodb_item(item) for item in items]
+    filter_record = FilterRecord()
+    for item in items:
+        records = filter_record.from_dynamodb_item(item)
 
     return records
 
@@ -66,31 +69,102 @@ def create_filter_permission(df_row_level_filter: DFRowLevelFilter):
             'Name': df_row_level_filter.table_name,
             'ColumnNames': [],
             'ColumnWildcard': {'ExcludedColumnNames': []}
+        },
+        'Database': {
+            'CatalogId': '590183925259',
+            'Name': df_row_level_filter.database_name
+        },
+        'Table': {
+            'CatalogId': '590183925259',
+            'DatabaseName': df_row_level_filter.database_name,
+            'Name': df_row_level_filter.table_name
         }
     }
 
-    permissions = ['SELECT', 'DESCRIBE', 'DROP']
+    permissions = ['SELECT']
 
-    lf_client.grant_permissions(
-        Principal="principal",
-        Resource=resource,
-        Permissions=permissions,
-        PermissionsWithGrantOption=[],
-        PermissionsToGrant=[],
-        PermissionsToRevoke=[],
-        PermissionsToApply=[],
-        Condition={
-            'FilterExpression': df_row_level_filter.expression
-        }
+    # lf_client.grant_permissions(
+    #     # Principal="arn:aws:iam::590183925259:user/lf-admin",
+    #     # Resource=resource,
+    #     # Permissions=permissions,
+    #     # PermissionsWithGrantOption=[],
+    #     # PermissionsToGrant=[],
+    #     # PermissionsToRevoke=[],
+    #     # PermissionsToApply=[],
+    #     # Condition={
+    #     #     'FilterExpression': df_row_level_filter.expression
+    #     # }
+    #
+    # )
+
+    response = lf_client.grant_permissions(
+        CatalogId='590183925259',
+        Principal={
+            'DataLakePrincipalIdentifier': 'arn:aws:iam::590183925259:user/lf-admin'
+        },
+        Resource={
+            'Catalog': {}
+            ,
+            'Database': {
+                'CatalogId': 'string',
+                'Name': 'string'
+            },
+            'Table': {
+                'CatalogId': 'string',
+                'DatabaseName': 'string',
+                'Name': 'string',
+                'TableWildcard': {}
+
+            },
+            'TableWithColumns': {
+                'CatalogId': 'string',
+                'DatabaseName': 'string',
+                'Name': 'string',
+                'ColumnNames': [
+                    'string',
+                ],
+                'ColumnWildcard': {
+                    'ExcludedColumnNames': [
+                        'string',
+                    ]
+                }
+            },
+            'DataLocation': {
+                'CatalogId': 'string',
+                'ResourceArn': 'string'
+            },
+            'DataCellsFilter': {
+                'TableCatalogId': 'string',
+                'DatabaseName': 'string',
+                'TableName': 'string',
+                'Name': 'string'
+            },
+            'LFTag': {
+                'CatalogId': 'string',
+                'TagKey': 'string',
+                'TagValues': [
+                    'string',
+                ]
+            },
+            'LFTagPolicy': {
+                'CatalogId': 'string',
+                'ResourceType': 'DATABASE' | 'TABLE',
+                'Expression': [
+                    {
+                        'TagKey': 'string',
+                        'TagValues': [
+                            'string',
+                        ]
+                    },
+                ]
+            }
+        },
+        Permissions=[
+            'ALL' | 'SELECT' | 'ALTER' | 'DROP' | 'DELETE' | 'INSERT' | 'DESCRIBE' | 'CREATE_DATABASE' | 'CREATE_TABLE' | 'DATA_LOCATION_ACCESS' | 'CREATE_LF_TAG' | 'ASSOCIATE' | 'GRANT_WITH_LF_TAG_EXPRESSION',
+        ],
+        PermissionsWithGrantOption=[
+            'ALL' | 'SELECT' | 'ALTER' | 'DROP' | 'DELETE' | 'INSERT' | 'DESCRIBE' | 'CREATE_DATABASE' | 'CREATE_TABLE' | 'DATA_LOCATION_ACCESS' | 'CREATE_LF_TAG' | 'ASSOCIATE' | 'GRANT_WITH_LF_TAG_EXPRESSION',
+        ]
     )
 
     return f"Row-level permission granted successfully"
-
-
-def sort_normalized_sql(normalized_sql):
-    parsed_sql = sqlparse.parse(normalized_sql)[0]
-    normalized_tokens = [str(t).strip() for t in parsed_sql.tokens if not t.is_whitespace]
-    normalized_tokens = [t.upper() if keyword.iskeyword(t) else t for t in normalized_tokens]
-    normalized_tokens.sort()
-    normalized_query = " ".join(normalized_tokens)
-    return normalized_query
