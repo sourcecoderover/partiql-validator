@@ -24,6 +24,7 @@ class FilterRecord:
 
     def to_dynamodb_item(self):
         return {
+            'data_catalog': self.database_name + "|" + self.table_name,
             'filter_name': self.filter_name,
             'filter_expression': self.filter_expression,
             'normalized_expression': self.normalized_expression,
@@ -36,6 +37,7 @@ class FilterRecord:
         }
 
     def from_dynamodb_item(self, item):
+        self.filter_name = item['filter_name']
         self.filter_expression = item['filter_expression']
         self.normalized_expression = item['normalized_expression']
         self.database_name = item['database_name']
